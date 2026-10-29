@@ -1,0 +1,4 @@
+sku,product_name,length_m,width_m,height_m,weight_kg,stackable,product_family,storage_requirements,handling_type
+SKU-0001,Deterjan 5L,0.30,0.20,0.32,5.4,evet,Temizlik,standard,manual
+SKU-0002,Dondurulmuş Bezelye 1kg,0.25,0.18,0.06,1.0,evet,Gıda,cold,manual
+SKU-0003,Su Paleti,1.20,1.00,1.40,620,evet,İçecek,standard,pallet

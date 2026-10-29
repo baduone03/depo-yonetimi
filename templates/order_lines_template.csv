@@ -1,0 +1,5 @@
+order_id,order_date,sku,quantity,movement_type
+SO-10001,2026-07-01,SKU-0001,3,outbound
+SO-10001,2026-07-01,SKU-0002,10,outbound
+SO-10002,2026-07-02,SKU-0003,1,outbound
+SO-10003,2026-07-03,SKU-0001,1,return
