@@ -9,7 +9,7 @@ import yaml
 DEFAULT_SETTINGS_PATH = Path(__file__).resolve().parents[2] / "config" / "default_settings.yaml"
 
 _FALLBACK = {
-    "units": {"dimension": "m", "weight": "kg"},
+    "units": {"dimension": "m", "weight": "kg", "volume": "m3"},
     "analysis": {"metric": "order_lines", "period_days": 90, "a_share": 0.80, "b_share": 0.15},
     "geometry": {"distance_mode": "graph", "dock_x": None, "dock_y": None},
     "slotting": {

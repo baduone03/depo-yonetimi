@@ -83,6 +83,22 @@ def parse_bool(value: str) -> bool | None:
     return None
 
 
+def parse_numbers(values: pd.Series) -> pd.Series:
+    """Parse numbers written as 12.5, 12,5, 1.234,5 or 1,234.5 (the last separator is the decimal mark).
+
+    A single comma is a decimal comma (Turkish convention): "1,234" -> 1.234.
+    """
+    s = values.astype(str).str.replace(r"[\s']", "", regex=True).str.replace("\u00a0", "", regex=False)
+    has_comma = s.str.contains(",", regex=False)
+    has_dot = s.str.contains(".", regex=False)
+    comma_last = s.str.rfind(",") > s.str.rfind(".")
+    both = has_comma & has_dot
+    out = s.where(~(both & comma_last), s.str.replace(".", "", regex=False))
+    out = out.where(~(both & ~comma_last), out.str.replace(",", "", regex=False))
+    out = out.str.replace(",", ".", regex=False)
+    return pd.to_numeric(out, errors="coerce")
+
+
 def _parse_dates(series: pd.Series) -> pd.Series:
     parsed = pd.to_datetime(series, errors="coerce", format="ISO8601")
     missing = parsed.isna() & (series != "")
@@ -129,7 +145,7 @@ def _parse_table(table: str, raw: pd.DataFrame, log: _IssueLog) -> pd.DataFrame 
             df[col] = values
 
         elif spec.dtype == "float":
-            numeric = pd.to_numeric(values.str.replace(",", ".", regex=False), errors="coerce")
+            numeric = parse_numbers(values)
             invalid = numeric.isna() & ~empty
             for idx in df.index[invalid & ~excluded]:
                 if spec.required:
@@ -190,7 +206,8 @@ def _check_range(table, df, col, low, high, log, message, inclusive_low=False) -
     return bad
 
 
-def validate_dataset(dataset: Dataset, dimension_unit: str = "m", weight_unit: str = "kg") -> ValidationReport:
+def validate_dataset(dataset: Dataset, dimension_unit: str = "m", weight_unit: str = "kg",
+                     volume_unit: str = "m3") -> ValidationReport:
     log = _IssueLog()
     report = ValidationReport()
     typed: dict[str, pd.DataFrame] = {}
@@ -205,7 +222,7 @@ def validate_dataset(dataset: Dataset, dimension_unit: str = "m", weight_unit: s
         report.row_counts[table] = {"input": int(len(raw)), "valid": 0}
         if parsed is None:
             continue
-        typed[table] = convert_units(table, parsed, dimension_unit, weight_unit)
+        typed[table] = convert_units(table, parsed, dimension_unit, weight_unit, volume_unit)
 
     # --- products -----------------------------------------------------
     if "products" in typed:

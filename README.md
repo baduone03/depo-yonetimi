@@ -1,12 +1,14 @@
 # Warehouse Intelligence & Slotting Optimizer
 
-Depo operasyonları için yerel çalışan bir karar destek uygulaması (MVP). Geçmiş sipariş hareketlerini analiz
+Depo operasyonları için bir karar destek uygulaması (MVP); yerelde veya Streamlit Community Cloud'da çalışır. Geçmiş sipariş hareketlerini analiz
 eder, ürünlerin mevcut lokasyonlarını değerlendirir, fiziksel kısıtlara uyan alternatif yerleşimler önerir ve
 **aynı siparişler üzerinde** mevcut ve önerilen yerleşimin toplama mesafesini karşılaştırır.
 
 > **Önemli:** Uygulamanın ürettiği mesafe, süre ve maliyet değerleri bir depo modeli üzerinde yapılan
 > **simülasyon/tahmin** sonuçlarıdır; ölçülmüş operasyon verisi değildir. Demo verisi **sentetiktir**.
-> Uygulama hiçbir stok hareketi yapmaz, hiçbir WMS'e veri yazmaz ve dosyalarınızı dışarı göndermez.
+> Uygulama hiçbir stok hareketi yapmaz ve hiçbir WMS'e veri yazmaz. **Yerel** çalıştırıldığında dosyalar
+> bilgisayarınızdan çıkmaz; **Cloud** sürümünde dosyalar Streamlit sunucularında işlenir (arayüz bunu otomatik
+> algılayıp belirtir; `WAREHOUSE_HOSTING=local|cloud` ortam değişkeniyle zorlanabilir).
 
 ## Kurulum
 
@@ -48,9 +50,15 @@ depoda beklenecek değeri göstermez.
 
 ## Gerçek depo verisi için gereken dosyalar
 
-CSV (`,` veya `;` ayraçlı, UTF-8/Windows-1254) ya da XLSX. Şablonlar `templates/` dizininde ve uygulamada
-**Veri sözlüğü ve şablonlar** sekmesinde. Tüm tablolar tek bir Excel çalışma kitabında (sayfa adı = tablo adı)
-da yüklenebilir.
+CSV (`,` veya `;` ayraçlı, UTF-8/Windows-1254) ya da XLSX. Tüm tablolar tek bir Excel çalışma kitabında da
+yüklenebilir.
+
+**Kolon eşleştirme:** ERP/WMS çıktısının kolon ve sayfa adlarını değiştirmeniz gerekmez. Dosya yüklendikten sonra
+uygulama her alan için bir kolon önerir (ör. "Stok Kodu" → `sku`, "Brüt Ağırlık (kg)" → `weight_kg`,
+"Siparişler" sayfası → `order_lines`); öneriler örnek değerlerle birlikte gösterilir ve elle değiştirilebilir.
+Eşleşmeyen zorunlu alan varsa analiz başlatılmaz. Eşleştirme `eslestirme.json` olarak kaydedilip aynı formattaki
+bir sonraki dosyada tekrar yüklenebilir. Sayılarda `12,5`, `1.234,5` ve `1,234.5` biçimleri desteklenir.
+Şablonlar `templates/` dizininde ve uygulamada **Veri sözlüğü ve şablonlar** sekmesinde.
 
 | Tablo | Zorunlu kolonlar | Opsiyonel kolonlar |
 |---|---|---|
@@ -60,7 +68,8 @@ da yüklenebilir.
 | `inventory` | sku, location_id, current_quantity | — |
 | `aisles` (opsiyonel geometri) | aisle_id, x_center, y_start, y_end | — |
 
-- Boyut birimi m/cm/mm, ağırlık birimi kg/g/t olarak seçilebilir; içeride metre ve kilogram kullanılır.
+- Boyut birimi m/cm/mm, ağırlık birimi kg/g/t ve lokasyon hacim birimi m³/litre/cm³/mm³ ayrı ayrı seçilir
+  (ERP'lerde boyut cm, hacim m³ veya litre olabilir); içeride metre, kilogram ve m³ kullanılır.
   Koordinatlar her zaman metredir.
 - Stok seviyesi geçmiş çıkışlardan türetilmez; `inventory` ayrıca sağlanmalıdır. Bir SKU birden çok
   lokasyonda olabilir.

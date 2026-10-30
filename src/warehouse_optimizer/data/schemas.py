@@ -20,7 +20,7 @@ class ColumnSpec:
 PRODUCTS = [
     ColumnSpec("sku", "str", True, "Benzersiz ürün kodu", "SKU-0001"),
     ColumnSpec("product_name", "str", False, "Ürün adı", "Deterjan 5L"),
-    ColumnSpec("length_m", "float", True, "Birim (elleçleme birimi) uzunluğu, metre", "0.40"),
+    ColumnSpec("length_m", "float", True, "Birim uzunluğu (elleçleme birimi), metre", "0.40"),
     ColumnSpec("width_m", "float", True, "Birim genişliği, metre", "0.30"),
     ColumnSpec("height_m", "float", True, "Birim yüksekliği, metre", "0.25"),
     ColumnSpec("weight_kg", "float", True, "Birim ağırlığı, kilogram", "5.2"),
@@ -49,7 +49,7 @@ LOCATIONS = [
     ColumnSpec("z", "float", False, "Seviye yüksekliği, metre (yürüme mesafesine katılmaz)", "0.0"),
     ColumnSpec("location_type", "str", False, "Lokasyon tipi (shelf, pallet ...)", "shelf"),
     ColumnSpec("max_weight_kg", "float", False, "Maksimum ağırlık, kg. Boşsa: hedef olarak kullanılmaz", "300"),
-    ColumnSpec("max_volume_m3", "float", False, "Maksimum hacim, m³. Boşsa: hedef olarak kullanılmaz", "0.8"),
+    ColumnSpec("max_volume_m3", "float", False, "Maksimum hacim (birimi ayrıca seçilir: m³, litre, cm³). Boşsa: hedef olarak kullanılmaz", "0.8"),
     ColumnSpec("max_length_m", "float", False, "Maksimum uzunluk, metre", "1.2"),
     ColumnSpec("max_width_m", "float", False, "Maksimum genişlik (derinlik), metre", "0.8"),
     ColumnSpec("max_height_m", "float", False, "Maksimum yükseklik, metre", "0.9"),
