@@ -25,6 +25,17 @@ Tarayıcıda `http://localhost:8501` açılır. Testler:
 python -m pytest
 ```
 
+## Streamlit Community Cloud'a yükleme (tarayıcıdan, terminal gerekmez)
+
+1. https://share.streamlit.io adresine GitHub hesabıyla giriş yapın ve Streamlit'e bu repoya erişim izni verin.
+2. **Create app → Deploy a public app from GitHub** seçin.
+3. Repository: `baduone03/depo-yonetimi`, Branch: `main`, Main file path: `app.py`.
+4. *Advanced settings* içinde Python sürümü olarak 3.12 seçin ve **Deploy**'a basın.
+
+Bağımlılıklar `requirements.txt` dosyasından otomatik kurulur. Not: Cloud'a yüklenen dosyalar Streamlit'in
+sunucularında işlenir; "veriler dışarı gönderilmez" garantisi yalnızca yerel çalıştırma için geçerlidir. Gerçek
+müşteri verisini Cloud sürümüne yüklemeden önce bunu değerlendirin.
+
 ## Hızlı başlangıç (demo modu)
 
 1. **Veri Yükleme ve Veri Kalitesi** sayfasında **Sentetik demo verisini yükle**'ye tıklayın.
