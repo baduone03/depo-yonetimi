@@ -1,0 +1,43 @@
+# Default parameters. Every value can be changed from the "Ayarlar" page.
+units:
+  dimension: m        # m | cm | mm  (product and location dimensions in input files)
+  weight: kg          # kg | g | t
+
+analysis:
+  metric: order_lines # order_lines | quantity | active_days
+  period_days: 90     # counted back from the latest outbound date
+  a_share: 0.80       # cumulative contribution share of class A
+  b_share: 0.15       # next share for class B; C gets the rest
+
+geometry:
+  distance_mode: graph  # graph (corridor network) | manhattan (estimate only)
+  dock_x: null          # shipping point; null -> demo value or default in front of first aisle
+  dock_y: null
+
+slotting:
+  method: hybrid        # hybrid | class_based (both are always computed and compared)
+  max_moves: 30
+  class_based:
+    class_weight_a: 3.0
+    class_weight_b: 2.0
+    class_weight_c: 1.0
+    min_gain: 1.0
+  hybrid:
+    w_travel: 1.0
+    w_height: 0.5
+    w_family: 0.0
+    w_fit: 2.0
+    move_cost_m: 30.0
+  handling_compatibility:
+    manual: [shelf, bin, flow_rack, pallet, floor]
+    pallet: [pallet, floor]
+    forklift: [pallet, floor]
+
+operations:
+  walking_speed_m_s: 1.0
+  pick_time_s_per_stop: 0      # 0 = unknown -> walking time only
+  daily_orders: null           # null -> derived from analysed period
+  operating_days: null         # null -> no projection
+  hourly_labor_cost: null      # null -> no cost estimate
+  use_two_opt: true
+  max_orders: 3000
