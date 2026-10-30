@@ -48,6 +48,15 @@ müşteri verisini Cloud sürümüne yüklemeden önce bunu değerlendirin.
 Demo verisinde başlangıç yerleşimi **rastgeledir**; bu yüzden demo iyileşme yüzdeleri (≈%24–28) gerçek bir
 depoda beklenecek değeri göstermez.
 
+## Hayali depo ile test (ERP formatı)
+
+`examples/hayali_depo.xlsx`, bir ERP'den alınmış gibi hazırlanmış **sentetik** bir depodur: 150 ürün, 492 lokasyon
+(6 raf koridoru, palet koridoru, soğuk oda, rezerv üst katlar), 8 koridor, 6 aylık sipariş geçmişi. Kolon adları,
+değerler ("elle", "palet", "raf", "soğuk") ve sayı/tarih biçimleri Türkçedir; birimler cm / kg / litre. İçine
+bilerek 9 veri hatası konmuştur (liste: `examples/build_hayali_depo.py`). Yüklerken boyut birimi **cm**, hacim
+birimi **litre**, sevkiyat noktası **X=20, Y=−2** seçin. Dosya `python examples/build_hayali_depo.py
+examples/hayali_depo.xlsx` ile yeniden üretilebilir.
+
 ## Gerçek depo verisi için gereken dosyalar
 
 CSV (`,` veya `;` ayraçlı, UTF-8/Windows-1254) ya da XLSX. Tüm tablolar tek bir Excel çalışma kitabında da
@@ -57,7 +66,8 @@ yüklenebilir.
 uygulama her alan için bir kolon önerir (ör. "Stok Kodu" → `sku`, "Brüt Ağırlık (kg)" → `weight_kg`,
 "Siparişler" sayfası → `order_lines`); öneriler örnek değerlerle birlikte gösterilir ve elle değiştirilebilir.
 Eşleşmeyen zorunlu alan varsa analiz başlatılmaz. Eşleştirme `eslestirme.json` olarak kaydedilip aynı formattaki
-bir sonraki dosyada tekrar yüklenebilir. Sayılarda `12,5`, `1.234,5` ve `1,234.5` biçimleri desteklenir.
+bir sonraki dosyada tekrar yüklenebilir. Sayılarda `12,5`, `1.234,5` ve `1,234.5` biçimleri desteklenir. Türkçe kategori değerleri
+(elle, palet, raf, zemin, soğuk, donuk, standart, tehlikeli…) standart kodlara çevrilir ve raporlanır.
 Şablonlar `templates/` dizininde ve uygulamada **Veri sözlüğü ve şablonlar** sekmesinde.
 
 | Tablo | Zorunlu kolonlar | Opsiyonel kolonlar |
