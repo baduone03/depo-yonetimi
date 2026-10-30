@@ -19,6 +19,10 @@ ROUTE_CURRENT = "#52514e"
 ROUTE_PROPOSED = "#2a78d6"
 LEVEL_OFFSET_M = 0.35
 
+# Plotly toolbar: hidden on charts (it covers titles on phones), kept compact for the warehouse map (zoom/pan).
+CHART_CONFIG = {"displayModeBar": False, "displaylogo": False}
+MAP_CONFIG = {"displaylogo": False, "modeBarButtonsToRemove": ["select2d", "lasso2d", "autoScale2d", "toImage"]}
+
 _LAYOUT = dict(
     template="plotly_white",
     font=dict(family="Inter, Segoe UI, sans-serif", size=12, color="#0b0b0b"),
@@ -116,8 +120,8 @@ def warehouse_map(locations: pd.DataFrame, geometry, placement: dict[str, str], 
                   sku_info: pd.DataFrame | None = None, color_by: str = "abc", title: str = "",
                   moves: pd.DataFrame | None = None, highlight_sku: str | None = None,
                   routes: list[tuple[str, list[tuple[float, float]], str]] | None = None,
-                  is_synthetic: bool = False, is_approximate: bool = False) -> go.Figure:
-    """placement: location_id -> sku for the scenario shown."""
+                  is_synthetic: bool = False, is_approximate: bool = False, plot_width: int = 900) -> go.Figure:
+    """placement: location_id -> sku for the scenario shown. plot_width: expected plot width in px (sizing)."""
     fig = go.Figure()
     for _, a in geometry.aisles.iterrows():
         fig.add_shape(type="rect", x0=a["x_center"] - 0.6, x1=a["x_center"] + 0.6, y0=a["y_start"], y1=a["y_end"],
@@ -201,9 +205,23 @@ def warehouse_map(locations: pd.DataFrame, geometry, placement: dict[str, str], 
     if is_approximate:
         caveats.append("YAKLAŞIK GEOMETRİ")
     full_title = title + (f"  —  {' · '.join(caveats)}" if caveats else "")
-    fig.update_xaxes(title="X (m)", scaleanchor="y", scaleratio=1, showgrid=False, zeroline=False)
-    fig.update_yaxes(title="Y (m)", showgrid=False)
-    return _apply(fig, full_title, height=640)
+    x_min, x_max, y_min, y_max = _map_bounds(df, geometry)
+    fig.update_xaxes(title="X (m)", range=[x_min, x_max], scaleanchor="y", scaleratio=1, showgrid=False,
+                     zeroline=False, constrain="domain")
+    fig.update_yaxes(title="Y (m)", range=[y_min, y_max], showgrid=False, constrain="domain")
+    # Height follows the warehouse aspect ratio for the expected plot width so little space is wasted.
+    aspect = (y_max - y_min) / max(x_max - x_min, 1e-9)
+    height = int(min(max(plot_width * aspect + 260, 340), 900))
+    fig = _apply(fig, full_title, height=height)
+    fig.update_layout(modebar=dict(orientation="v"), margin=dict(l=10, r=10, t=50, b=10),
+                      legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="left", x=0))
+    return fig
+
+
+def _map_bounds(df: pd.DataFrame, geometry, pad: float = 2.0) -> tuple[float, float, float, float]:
+    xs = list(df["x_plot"]) + list(geometry.aisles["x_center"]) + [geometry.dock_xy[0]]
+    ys = list(df["y"]) + list(geometry.aisles["y_start"]) + list(geometry.aisles["y_end"]) + [geometry.dock_xy[1]]
+    return min(xs) - pad, max(xs) + pad, min(ys) - pad - 1.5, max(ys) + pad
 
 
 # --- simulation -----------------------------------------------------------------

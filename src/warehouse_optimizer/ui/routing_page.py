@@ -10,6 +10,9 @@ from ..simulation.comparison import resolve_pick_location
 from . import common as c
 from .layout_page import scenario_placement, sku_info_frame
 
+LOCATION_COLUMNS = {"location_id": "Lokasyon", "aisle_id": "Koridor", "zone": "Bölge", "x": "X (m)", "y": "Y (m)",
+                    "z": "Z (m)", "dock_distance_m": "Sevkiyata tek yön (m)"}
+
 
 def render() -> None:
     c.page_header("Rota ve Mesafe Analizi")
@@ -36,10 +39,11 @@ def render() -> None:
         k[2].metric("Ortalama sevkiyat mesafesi", c.fmt_num(locs["dock_distance_m"].mean(), 1, " m"))
         if not unreachable.empty:
             st.error("Ulaşılamayan lokasyonlar rotalara katılamaz:")
-            st.dataframe(unreachable[["location_id", "aisle_id", "x", "y"]], hide_index=True)
+            st.dataframe(unreachable[["location_id", "aisle_id", "x", "y"]].rename(columns=LOCATION_COLUMNS),
+                         hide_index=True)
         st.dataframe(locs[["location_id", "aisle_id", "zone", "x", "y", "z", "dock_distance_m"]]
-                     .sort_values("dock_distance_m").rename(columns={"dock_distance_m": "Sevkiyata tek yön (m)"}),
-                     hide_index=True)
+                     .sort_values("dock_distance_m").rename(columns=LOCATION_COLUMNS), hide_index=True,
+                     column_config={"Sevkiyata tek yön (m)": st.column_config.NumberColumn(format="%.1f")})
 
     with tab_order:
         method = res.selected_method
@@ -73,8 +77,9 @@ def render() -> None:
         fig = viz.warehouse_map(res.locations, res.geometry, scenario_placement(res, method, "proposed"), abc_map,
                                 sku_info_frame(res), "abc", f"Sipariş {order_id}: mevcut ve önerilen rota",
                                 routes=routes, is_synthetic=res.is_synthetic,
-                                is_approximate=res.geometry.is_approximate)
-        st.plotly_chart(fig, theme=None)
+                                is_approximate=res.geometry.is_approximate,
+                                plot_width=c.map_plot_width())
+        st.plotly_chart(fig, theme=None, config=viz.MAP_CONFIG)
         detail = pd.DataFrame({"SKU": skus, "Mevcut lokasyon": [cur_map[s] for s in skus],
                                "Önerilen lokasyon": [new_map.get(s, cur_map[s]) for s in skus]})
         st.dataframe(detail, hide_index=True)

@@ -133,6 +133,8 @@ def run_pipeline(dataset: Dataset, settings: dict) -> PipelineResult:
         return result
     tables = validation.tables
 
+    _add_code_diagnostics(validation, settings)
+
     # --- movement & ABC ----------------------------------------------------
     a = settings["analysis"]
     result.period = resolve_period(tables["order_lines"], int(a["period_days"]))
@@ -167,6 +169,32 @@ def run_pipeline(dataset: Dataset, settings: dict) -> PipelineResult:
         result.comparisons[method] = compare_placements(result.period_lines, slot.placement_current,
                                                         slot.placement_proposed, result.model, dock_distance, params)
     return result
+
+
+def _add_code_diagnostics(validation: ValidationReport, settings: dict) -> None:
+    """Warn about category codes that make products unplaceable everywhere (instead of failing silently)."""
+    products, locations = validation.tables["products"], validation.tables["locations"]
+    compat = settings["slotting"].get("handling_compatibility") or {}
+    rows = []
+    for value, n in products["handling_type"][products["handling_type"] != ""].value_counts().sort_index().items():
+        if value not in compat:
+            rows.append(("products", "handling_type", f"Elleçleme tipi '{value}' ayarlarda tanımlı değil; bu tipteki "
+                         f"{n} ürün hiçbir lokasyona atanamaz (Ayarlar → handling_compatibility)", value))
+    location_types = set(locations["location_type"])
+    allowed = {t for types in compat.values() for t in types}
+    for value in sorted(location_types - allowed - {""}):
+        rows.append(("locations", "location_type", f"Lokasyon tipi '{value}' hiçbir elleçleme tipine izinli değil; "
+                     "bu lokasyonlara elleçleme tipi tanımlı ürün atanamaz", value))
+    classes = set(locations.loc[locations["is_available"], "storage_class"])
+    for value, n in products["storage_requirements"].value_counts().sort_index().items():
+        if value not in classes:
+            rows.append(("products", "storage_requirements", f"Depolama koşulu '{value}' olan {n} ürün için "
+                         "kullanılabilir lokasyon yok", value))
+    if rows:
+        extra = pd.DataFrame([{"table": t, "row": None, "field": f, "severity": "uyarı", "message": m, "value": v,
+                               "action": "kontrol edin"} for t, f, m, v in rows])
+        extra["row"] = extra["row"].astype("Int64")
+        validation.issues = pd.concat([validation.issues, extra], ignore_index=True)
 
 
 def method_comparison_table(result: PipelineResult) -> pd.DataFrame:

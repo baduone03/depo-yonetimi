@@ -46,12 +46,13 @@ def render() -> None:
 
     table = res.sku_table()
     l, r = st.columns(2)
-    l.plotly_chart(viz.pareto_chart(table, a["a_share"], a["b_share"], METRIC_LABELS[a["metric"]]), theme=None)
-    r.plotly_chart(viz.abc_distribution_chart(table), theme=None)
-    st.plotly_chart(viz.frequency_chart(table, res.period.days), theme=None)
+    l.plotly_chart(viz.pareto_chart(table, a["a_share"], a["b_share"], METRIC_LABELS[a["metric"]]), theme=None,
+                   config=viz.CHART_CONFIG)
+    r.plotly_chart(viz.abc_distribution_chart(table), theme=None, config=viz.CHART_CONFIG)
+    st.plotly_chart(viz.frequency_chart(table, res.period.days), theme=None, config=viz.CHART_CONFIG)
     daily = daily_activity(res.validation.tables["order_lines"], res.period)
     if not daily.empty:
-        st.plotly_chart(viz.daily_activity_chart(daily), theme=None)
+        st.plotly_chart(viz.daily_activity_chart(daily), theme=None, config=viz.CHART_CONFIG)
 
     st.subheader("SKU tablosu")
     f1, f2 = st.columns([1, 3])

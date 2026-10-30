@@ -119,6 +119,15 @@ def download_pair(label: str, df: pd.DataFrame, file_stem: str, metadata: dict |
                        width="stretch")
 
 
+def map_plot_width() -> int:
+    """Rough plot width for sizing the warehouse map: narrow on phones, wide otherwise."""
+    try:
+        agent = st.context.headers.get("User-Agent", "") or ""
+    except Exception:  # noqa: BLE001 - st.context is unavailable in some test runners
+        agent = ""
+    return 340 if any(token in agent for token in ("iPhone", "Android", "Mobile")) else 900
+
+
 def page_header(title: str, subtitle: str = "") -> None:
     st.title(title)
     if subtitle:

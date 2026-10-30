@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 from .loaders import Dataset, convert_units
+from .value_normalization import normalize_codes
 from .schemas import (DEFAULTS, FALSE_VALUES, MOVEMENT_TYPE_ALIASES, REQUIRED_TABLES, SCHEMAS,
                       TRUE_VALUES, ColumnSpec)
 
@@ -67,7 +68,9 @@ class _IssueLog:
     def frame(self) -> pd.DataFrame:
         if not self.rows:
             return pd.DataFrame(columns=ISSUE_COLUMNS)
-        return pd.DataFrame(self.rows, columns=ISSUE_COLUMNS)
+        df = pd.DataFrame(self.rows, columns=ISSUE_COLUMNS)
+        df["row"] = df["row"].astype("Int64")  # file row numbers are integers; missing = table-level issue
+        return df
 
 
 def _file_row(index) -> int:
@@ -188,6 +191,14 @@ def _parse_table(table: str, raw: pd.DataFrame, log: _IssueLog) -> pd.DataFrame 
     return df[~excluded].copy()
 
 
+def _normalize(table: str, values: pd.Series, kind: str, empty_default: str, log: _IssueLog) -> pd.Series:
+    normalized, translated = normalize_codes(values, kind, empty_default)
+    if translated:
+        pairs = ", ".join(f"{src} → {dst}" for src, dst in sorted(translated.items()))
+        log.add(table, None, values.name, INFO, f"Değerler standart kodlara çevrildi: {pairs}", "", "çevrildi")
+    return normalized
+
+
 def _exclude_duplicates(table: str, df: pd.DataFrame, key: list[str], log: _IssueLog) -> pd.DataFrame:
     dup = df.duplicated(subset=key, keep="first")
     for _, row in df[dup].iterrows():
@@ -234,8 +245,8 @@ def validate_dataset(dataset: Dataset, dimension_unit: str = "m", weight_unit: s
         bad |= _check_range("products", df, "weight_kg", 0, MAX_UNIT_WEIGHT_KG, log,
                             f"Fiziksel olarak imkânsız ağırlık (0 < değer ≤ {MAX_UNIT_WEIGHT_KG:g} kg olmalı)")
         df = df[~bad].copy()
-        df["storage_requirements"] = df["storage_requirements"].str.lower()
-        df["handling_type"] = df["handling_type"].str.lower()
+        df["storage_requirements"] = _normalize("products", df["storage_requirements"], "storage", "standard", log)
+        df["handling_type"] = _normalize("products", df["handling_type"], "handling", "", log)
         df["unit_volume_m3"] = df["length_m"] * df["width_m"] * df["height_m"]
         typed["products"] = df
 
@@ -257,8 +268,8 @@ def validate_dataset(dataset: Dataset, dimension_unit: str = "m", weight_unit: s
             log.add("locations", None, "kapasite", WARNING,
                     f"{int(unknown_cap.sum())} lokasyonda kapasite bilgisi eksik (ör. {sample})",
                     "", "bu lokasyonlar hedef olarak kullanılmaz")
-        df["location_type"] = df["location_type"].str.lower()
-        df["storage_class"] = df["storage_class"].str.lower()
+        df["location_type"] = _normalize("locations", df["location_type"], "location_type", "", log)
+        df["storage_class"] = _normalize("locations", df["storage_class"], "storage", "standard", log)
         typed["locations"] = df
 
     known_locations = set(typed["locations"]["location_id"]) if "locations" in typed else set()

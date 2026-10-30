@@ -61,8 +61,8 @@ def render() -> None:
                "iyileşme % = (mevcut − önerilen) / mevcut × 100")
 
     l, r = st.columns([3, 2])
-    l.plotly_chart(viz.order_distance_scatter(comp.per_order), theme=None)
-    r.plotly_chart(viz.distance_distribution_chart(comp.per_order), theme=None)
+    l.plotly_chart(viz.order_distance_scatter(comp.per_order), theme=None, config=viz.CHART_CONFIG)
+    r.plotly_chart(viz.distance_distribution_chart(comp.per_order), theme=None, config=viz.CHART_CONFIG)
 
     st.subheader("Dönemsel projeksiyon (tahmini)")
     k = st.columns(4)

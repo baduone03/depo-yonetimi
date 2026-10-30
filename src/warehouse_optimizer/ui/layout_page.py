@@ -54,8 +54,10 @@ def render() -> None:
     title = f"{'Mevcut' if scenario == 'current' else 'Önerilen'} yerleşim — {METHOD_LABELS[method]}"
     fig = viz.warehouse_map(res.locations, res.geometry, placement, abc_map, sku_info_frame(res), color_by, title,
                             moves=slot.moves if show_moves else None, highlight_sku=highlight_sku,
-                            is_synthetic=res.is_synthetic, is_approximate=res.geometry.is_approximate)
-    event = st.plotly_chart(fig, theme=None, on_select="rerun", selection_mode="points", key="map")
+                            is_synthetic=res.is_synthetic, is_approximate=res.geometry.is_approximate,
+                                plot_width=c.map_plot_width())
+    event = st.plotly_chart(fig, theme=None, on_select="rerun", selection_mode="points", key="map",
+                            config=viz.MAP_CONFIG)
     st.caption("Aynı koordinattaki raf seviyeleri haritada yan yana (0,35 m kaydırılarak) gösterilir. Kare: lokasyon; "
                "yıldız: sevkiyat noktası; gri bant: koridor. Oklar mevcut → hedef taşımalarını gösterir.")
 
