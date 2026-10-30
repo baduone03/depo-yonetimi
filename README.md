@@ -50,9 +50,15 @@ depoda beklenecek değeri göstermez.
 
 ## Gerçek depo verisi için gereken dosyalar
 
-CSV (`,` veya `;` ayraçlı, UTF-8/Windows-1254) ya da XLSX. Şablonlar `templates/` dizininde ve uygulamada
-**Veri sözlüğü ve şablonlar** sekmesinde. Tüm tablolar tek bir Excel çalışma kitabında (sayfa adı = tablo adı)
-da yüklenebilir.
+CSV (`,` veya `;` ayraçlı, UTF-8/Windows-1254) ya da XLSX. Tüm tablolar tek bir Excel çalışma kitabında da
+yüklenebilir.
+
+**Kolon eşleştirme:** ERP/WMS çıktısının kolon ve sayfa adlarını değiştirmeniz gerekmez. Dosya yüklendikten sonra
+uygulama her alan için bir kolon önerir (ör. "Stok Kodu" → `sku`, "Brüt Ağırlık (kg)" → `weight_kg`,
+"Siparişler" sayfası → `order_lines`); öneriler örnek değerlerle birlikte gösterilir ve elle değiştirilebilir.
+Eşleşmeyen zorunlu alan varsa analiz başlatılmaz. Eşleştirme `eslestirme.json` olarak kaydedilip aynı formattaki
+bir sonraki dosyada tekrar yüklenebilir. Sayılarda `12,5`, `1.234,5` ve `1,234.5` biçimleri desteklenir.
+Şablonlar `templates/` dizininde ve uygulamada **Veri sözlüğü ve şablonlar** sekmesinde.
 
 | Tablo | Zorunlu kolonlar | Opsiyonel kolonlar |
 |---|---|---|
@@ -62,7 +68,8 @@ da yüklenebilir.
 | `inventory` | sku, location_id, current_quantity | — |
 | `aisles` (opsiyonel geometri) | aisle_id, x_center, y_start, y_end | — |
 
-- Boyut birimi m/cm/mm, ağırlık birimi kg/g/t olarak seçilebilir; içeride metre ve kilogram kullanılır.
+- Boyut birimi m/cm/mm, ağırlık birimi kg/g/t ve lokasyon hacim birimi m³/litre/cm³/mm³ ayrı ayrı seçilir
+  (ERP'lerde boyut cm, hacim m³ veya litre olabilir); içeride metre, kilogram ve m³ kullanılır.
   Koordinatlar her zaman metredir.
 - Stok seviyesi geçmiş çıkışlardan türetilmez; `inventory` ayrıca sağlanmalıdır. Bir SKU birden çok
   lokasyonda olabilir.

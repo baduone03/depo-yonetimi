@@ -2,6 +2,7 @@
 units:
   dimension: m        # m | cm | mm  (product and location dimensions in input files)
   weight: kg          # kg | g | t
+  volume: m3          # m3 | dm3 (litre) | cm3 | mm3  (location max_volume_m3 in input files)
 
 analysis:
   metric: order_lines # order_lines | quantity | active_days

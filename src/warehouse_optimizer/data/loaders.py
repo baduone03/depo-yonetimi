@@ -16,6 +16,7 @@ from .schemas import SCHEMAS
 
 DIMENSION_FACTORS = {"m": 1.0, "cm": 0.01, "mm": 0.001}
 WEIGHT_FACTORS = {"kg": 1.0, "g": 0.001, "t": 1000.0}
+VOLUME_FACTORS = {"m3": 1.0, "dm3": 0.001, "cm3": 1e-6, "mm3": 1e-9}
 
 
 @dataclass
@@ -40,8 +41,12 @@ def normalize_column_name(name: object) -> str:
     return re.sub(r"[^0-9a-zçğıöşü_]", "", text)
 
 
-def read_table(source, filename: str | None = None, sheet_name: str | int = 0) -> pd.DataFrame:
-    """Read a CSV or XLSX file (path, bytes or file-like) into a text DataFrame."""
+def read_table(source, filename: str | None = None, sheet_name: str | int = 0,
+               normalize_columns: bool = True) -> pd.DataFrame:
+    """Read a CSV or XLSX file (path, bytes or file-like) into a text DataFrame.
+
+    With normalize_columns=False the original headers are kept (used by the column-mapping step).
+    """
     name = filename or (str(source) if isinstance(source, (str, Path)) else getattr(source, "name", ""))
     suffix = Path(name).suffix.lower()
     if isinstance(source, bytes):
@@ -52,13 +57,22 @@ def read_table(source, filename: str | None = None, sheet_name: str | int = 0) -
         df = _read_csv_flexible(source)
     else:
         raise ValueError(f"Desteklenmeyen dosya türü: {suffix} (CSV veya XLSX bekleniyor)")
-    df.columns = [normalize_column_name(c) for c in df.columns]
+    if normalize_columns:
+        df.columns = [normalize_column_name(c) for c in df.columns]
+    else:
+        df.columns = [str(c).strip() for c in df.columns]
     df = df.fillna("")
     for col in df.columns:
         df[col] = df[col].astype(str).str.strip()
     # Drop rows that are completely empty (common at the end of Excel exports).
     df = df[~(df == "").all(axis=1)]
     return df
+
+
+def excel_sheet_names(source) -> list[str]:
+    if isinstance(source, bytes):
+        source = io.BytesIO(source)
+    return list(pd.ExcelFile(source, engine="openpyxl").sheet_names)
 
 
 def _read_csv_flexible(source) -> pd.DataFrame:
@@ -79,8 +93,12 @@ def _read_csv_flexible(source) -> pd.DataFrame:
     return pd.read_csv(io.StringIO(text), sep=sep, dtype=str, keep_default_na=False)
 
 
-def convert_units(table: str, df: pd.DataFrame, dimension_unit: str = "m", weight_unit: str = "kg") -> pd.DataFrame:
-    """Convert dimension / weight columns of a *typed* table to metres and kilograms."""
+def convert_units(table: str, df: pd.DataFrame, dimension_unit: str = "m", weight_unit: str = "kg",
+                  volume_unit: str = "m3") -> pd.DataFrame:
+    """Convert dimension / weight / volume columns of a *typed* table to metres, kilograms and m3.
+
+    Volume has its own unit because ERP exports often give dimensions in cm but capacity in m3 or litres.
+    """
     dim_factor = DIMENSION_FACTORS[dimension_unit]
     weight_factor = WEIGHT_FACTORS[weight_unit]
     out = df.copy()
@@ -95,7 +113,7 @@ def convert_units(table: str, df: pd.DataFrame, dimension_unit: str = "m", weigh
             if col in out:
                 out[col] = out[col] * dim_factor
         if "max_volume_m3" in out:
-            out["max_volume_m3"] = out["max_volume_m3"] * dim_factor ** 3
+            out["max_volume_m3"] = out["max_volume_m3"] * VOLUME_FACTORS[volume_unit]
         if "max_weight_kg" in out:
             out["max_weight_kg"] = out["max_weight_kg"] * weight_factor
     return out

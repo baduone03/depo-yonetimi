@@ -124,7 +124,7 @@ def build_move_plan(result: PipelineResult, method: str) -> pd.DataFrame:
 
 def run_pipeline(dataset: Dataset, settings: dict) -> PipelineResult:
     units = settings["units"]
-    validation = validate_dataset(dataset, units["dimension"], units["weight"])
+    validation = validate_dataset(dataset, units["dimension"], units["weight"], units.get("volume", "m3"))
     result = PipelineResult(settings=settings, dataset=dataset, validation=validation,
                             selected_method=settings["slotting"].get("method", "hybrid"))
     missing = validation.missing_tables()
@@ -231,6 +231,8 @@ def report_metadata(result: PipelineResult, method: str | None = None) -> dict:
         "Analiz dönemi": result.period.label() if result.period else "—",
         "ABC metriği": METRIC_LABELS.get(a["metric"], a["metric"]),
         "ABC eşikleri": f"A ≤ %{a['a_share'] * 100:.0f}, B sonraki %{a['b_share'] * 100:.0f}, C kalan",
+        "Girdi birimleri": "boyut {dimension}, ağırlık {weight}, hacim {volume}".format(
+            **{"volume": "m3", **result.settings["units"]}),
         "Mesafe modeli": result.model.label if result.model else "—",
         "Yerleşim yöntemi": METHOD_LABELS.get(method, method),
         "Maksimum taşıma": result.settings["slotting"]["max_moves"],
