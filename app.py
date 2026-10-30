@@ -10,6 +10,7 @@ if str(SRC) not in sys.path:
 
 import streamlit as st  # noqa: E402
 
+from warehouse_optimizer.hosting import privacy_notice  # noqa: E402
 from warehouse_optimizer.ui import (analysis_page, dashboard, data_page, layout_page, move_plan_page,  # noqa: E402
                                     optimization_page, reports_page, routing_page, settings_page, simulation_page)
 
@@ -37,5 +38,5 @@ with st.sidebar:
         st.warning("SENTETİK DEMO VERİSİ")
     else:
         st.caption("Kullanıcı verisi yüklü")
-    st.caption("Yerel çalışır · veriler dışarı gönderilmez · WMS'e yazmaz")
+    st.caption(privacy_notice(short=True))
 nav.run()

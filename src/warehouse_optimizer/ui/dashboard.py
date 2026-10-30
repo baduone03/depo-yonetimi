@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from ..hosting import privacy_notice
 from ..optimization.slotting_engine import METHOD_LABELS
 from . import common as c
 
@@ -78,7 +79,6 @@ def _how_it_works() -> None:
 4. **Yerleşim Optimizasyonu** — sınıf tabanlı ve hibrit yöntemlerle kısıtlara uygun öneri.
 5. **Rota ve Önce/Sonra Simülasyonu** — aynı siparişler, aynı rota modeli.
 6. **Taşıma Planı ve Raporlar** — CSV/XLSX dışa aktarma.
-
-Uygulama yerel çalışır; dosyalarınız dışarı gönderilmez ve hiçbir WMS'e değişiklik yazılmaz.
 """
     )
+    st.caption(privacy_notice())

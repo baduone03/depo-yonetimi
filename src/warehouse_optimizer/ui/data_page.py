@@ -9,6 +9,7 @@ import streamlit as st
 
 from ..data.loaders import Dataset, read_table
 from ..data.schemas import REQUIRED_TABLES, SCHEMAS, TABLE_LABELS, data_dictionary_rows
+from ..hosting import is_hosted, privacy_notice
 from ..reporting.exports import localize, to_excel_bytes
 from . import common as c
 
@@ -17,7 +18,11 @@ SEVERITY_ORDER = {"hata": 0, "uyarı": 1, "bilgi": 2}
 
 
 def render() -> None:
-    c.page_header("Veri Yükleme ve Veri Kalitesi", "CSV veya XLSX dosyaları; tüm işlem yerel bilgisayarda yapılır.")
+    c.page_header("Veri Yükleme ve Veri Kalitesi", "CSV veya XLSX dosyaları")
+    if is_hosted():
+        st.warning(privacy_notice(), icon="☁️")
+    else:
+        st.caption(privacy_notice())
     tab_upload, tab_quality, tab_dict = st.tabs(["Yükleme", "Veri kalite raporu", "Veri sözlüğü ve şablonlar"])
     with tab_upload:
         _upload_section()

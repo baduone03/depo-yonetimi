@@ -1,12 +1,14 @@
 # Warehouse Intelligence & Slotting Optimizer
 
-Depo operasyonları için yerel çalışan bir karar destek uygulaması (MVP). Geçmiş sipariş hareketlerini analiz
+Depo operasyonları için bir karar destek uygulaması (MVP); yerelde veya Streamlit Community Cloud'da çalışır. Geçmiş sipariş hareketlerini analiz
 eder, ürünlerin mevcut lokasyonlarını değerlendirir, fiziksel kısıtlara uyan alternatif yerleşimler önerir ve
 **aynı siparişler üzerinde** mevcut ve önerilen yerleşimin toplama mesafesini karşılaştırır.
 
 > **Önemli:** Uygulamanın ürettiği mesafe, süre ve maliyet değerleri bir depo modeli üzerinde yapılan
 > **simülasyon/tahmin** sonuçlarıdır; ölçülmüş operasyon verisi değildir. Demo verisi **sentetiktir**.
-> Uygulama hiçbir stok hareketi yapmaz, hiçbir WMS'e veri yazmaz ve dosyalarınızı dışarı göndermez.
+> Uygulama hiçbir stok hareketi yapmaz ve hiçbir WMS'e veri yazmaz. **Yerel** çalıştırıldığında dosyalar
+> bilgisayarınızdan çıkmaz; **Cloud** sürümünde dosyalar Streamlit sunucularında işlenir (arayüz bunu otomatik
+> algılayıp belirtir; `WAREHOUSE_HOSTING=local|cloud` ortam değişkeniyle zorlanabilir).
 
 ## Kurulum
 
