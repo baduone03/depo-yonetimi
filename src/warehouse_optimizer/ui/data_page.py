@@ -252,7 +252,7 @@ def _quality_section() -> None:
     shown = issues[issues["severity"].isin(sev) & issues["table"].isin(tables)]
     shown = shown.sort_values(["severity", "table", "row"], key=lambda col: col.map(SEVERITY_ORDER)
                               if col.name == "severity" else col, kind="mergesort")
-    shown = shown.assign(row=shown["row"].astype(object).where(shown["row"].notna(), "—"))
+    shown = shown.assign(row=[("—" if pd.isna(r) else str(int(r))) for r in shown["row"]])
     st.dataframe(localize(shown), hide_index=True)
     meta = {"Veri kaynağı": c.dataset().source_label, "Satır no": "Dosya satırı (başlık = 1)"}
     c.download_pair("Veri kalite raporu", localize(issues), "veri_kalite_raporu", meta, "dq")
